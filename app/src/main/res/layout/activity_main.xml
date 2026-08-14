@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#F5F5F5">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#1A237E"
+            android:padding="16dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="سجلاتي"
+                android:textColor="#FFFFFF"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:gravity="end"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#4CAF50"
+            android:padding="16dp"
+            android:layout_margin="12dp">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="الرصيد الكلي" android:textColor="#FFFFFF" android:gravity="end"/>
+            <TextView android:id="@+id/tvBalance" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#FFFFFF" android:textSize="24sp" android:textStyle="bold" android:gravity="end"/>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingHorizontal="12dp">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:background="#FFFFFF" android:padding="10dp" android:layout_margin="4dp">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="كاش" android:gravity="center"/>
+                <TextView android:id="@+id/tvCash" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textStyle="bold"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:background="#FFFFFF" android:padding="10dp" android:layout_margin="4dp">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="بطاقة" android:gravity="center"/>
+                <TextView android:id="@+id/tvCard" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textStyle="bold"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingHorizontal="12dp">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:background="#FFFFFF" android:padding="10dp" android:layout_margin="4dp">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="دخل" android:gravity="center"/>
+                <TextView android:id="@+id/tvIncome" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textStyle="bold" android:textColor="#2E7D32"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:background="#FFFFFF" android:padding="10dp" android:layout_margin="4dp">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="مصروف" android:gravity="center"/>
+                <TextView android:id="@+id/tvExpense" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textStyle="bold" android:textColor="#D32F2F"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView android:id="@+id/tvNetDebt" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textStyle="bold" android:textSize="16sp" android:padding="10dp" android:layout_margin="12dp" android:background="#FFFFFF"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingHorizontal="12dp"/>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="#1976D2"/>
+</FrameLayout>
