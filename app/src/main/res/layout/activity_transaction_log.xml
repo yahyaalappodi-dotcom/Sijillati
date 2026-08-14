@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@color/background">
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:layout_marginTop="16dp" android:text="سجل جميع المعاملات" android:textSize="22sp" android:textStyle="bold" />
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:layout_marginTop="4dp" android:text="اضغط مطولاً على أي معاملة للتعديل أو الحذف" android:textColor="@color/gray" android:textSize="12sp" />
-    <androidx.recyclerview.widget.RecyclerView android:id="@+id/recyclerLog" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="8dp" android:padding="8dp" />
-</LinearLayout>

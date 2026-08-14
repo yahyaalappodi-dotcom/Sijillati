@@ -1,31 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:background="@color/background">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="+ معاملة جديدة" android:textColor="@color/primary" android:textSize="24sp" android:textStyle="bold" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:layout_marginTop="24dp" android:text="العنوان:" />
-        <EditText android:id="@+id/etTitle" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="8dp" android:background="@drawable/bg_input" android:hint="مثال: راتب، فاتورة، سلفة أحمد..." android:paddingHorizontal="16dp" android:textAlignment="viewEnd" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:layout_marginTop="16dp" android:text="المبلغ:" />
-        <EditText android:id="@+id/etAmount" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="8dp" android:background="@drawable/bg_input" android:hint="المبلغ" android:inputType="numberDecimal" android:paddingHorizontal="16dp" android:textAlignment="viewEnd" />
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:layout_marginTop="16dp" android:text="نوع المعاملة:" />
-        <RadioGroup android:id="@+id/rgType" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:orientation="horizontal" android:gravity="end">
-            <RadioButton android:id="@+id/rbBorrow" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اقتراض" />
-            <RadioButton android:id="@+id/rbLend" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="إقراض" />
-            <RadioButton android:id="@+id/rbExpense" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="مصروف" />
-            <RadioButton android:id="@+id/rbIncome" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checked="true" android:text="دخل" />
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="العنوان:" android:gravity="end"/>
+        <EditText android:id="@+id/etTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="مثال: راتب، فاتورة، سلفة أحمد..." android:gravity="end"/>
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="المبلغ:" android:gravity="end" android:layout_marginTop="16dp"/>
+        <EditText android:id="@+id/etAmount" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="المبلغ" android:inputType="numberDecimal" android:gravity="end"/>
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="نوع المعاملة:" android:gravity="end" android:layout_marginTop="16dp"/>
+        <RadioGroup android:id="@+id/rgType" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <RadioButton android:id="@+id/rbIncome" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="دخل" android:textAlignment="viewEnd"/>
+            <RadioButton android:id="@+id/rbExpense" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="مصروف" android:textAlignment="viewEnd"/>
+            <RadioButton android:id="@+id/rbLent" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="إقراض (أعطيت فلوس لحد)" android:textAlignment="viewEnd"/>
+            <RadioButton android:id="@+id/rbBorrowed" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="اقتراض (أخذت فلوس من حد)" android:textAlignment="viewEnd"/>
         </RadioGroup>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:layout_marginTop="16dp" android:text="طريقة الدفع:" />
-        <RadioGroup android:id="@+id/rgPayment" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:gravity="end" android:orientation="horizontal">
-            <RadioButton android:id="@+id/rbCard" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="بطاقة" />
-            <RadioButton android:id="@+id/rbCash" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checked="true" android:text="كاش" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="طريقة الدفع:" android:gravity="end" android:layout_marginTop="16dp"/>
+        <RadioGroup android:id="@+id/rgMethod" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <RadioButton android:id="@+id/rbMaster" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ماستر"/>
+            <RadioButton android:id="@+id/rbCash" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="كاش"/>
         </RadioGroup>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:layout_marginTop="16dp" android:text="العملة:" />
-        <RadioGroup android:id="@+id/rgCurrency" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:gravity="end" android:orientation="horizontal">
-            <RadioButton android:id="@+id/rbUsd" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="دولار" />
-            <RadioButton android:id="@+id/rbIqd" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checked="true" android:text="دينار" />
-        </RadioGroup>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end" android:layout_marginTop="16dp" android:text="التاريخ:" />
-        <TextView android:id="@+id/tvDate" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="8dp" android:background="@drawable/bg_input" android:gravity="center_vertical|end" android:paddingHorizontal="16dp" android:text="2026-08-14" android:textSize="16sp" />
-        <Button android:id="@+id/btnPickDate" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="8dp" android:backgroundTint="@color/primary" android:text="اختيار التاريخ" android:textColor="@color/white" />
-        <Button android:id="@+id/btnSave" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="32dp" android:backgroundTint="@color/primary_dark" android:text="حفظ المعاملة" android:textColor="@color/white" android:textSize="18sp" />
+
+        <TextView android:id="@+id/tvDate" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="end" android:layout_marginTop="16dp" android:textStyle="bold"/>
+        <Button android:id="@+id/btnDate" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="اختيار التاريخ" android:layout_marginTop="8dp"/>
+
+        <Button android:id="@+id/btnSave" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="حفظ المعاملة" android:backgroundTint="#1A237E" android:textColor="#FFFFFF" android:layout_marginTop="24dp"/>
     </LinearLayout>
 </ScrollView>
