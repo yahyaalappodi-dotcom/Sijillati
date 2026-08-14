@@ -21,6 +21,11 @@ jobs:
           api-level: 33
           build-tools: '33.0.2'
 
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.2
+
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -31,13 +36,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build with Gradle (use ./gradlew if present)
+      - name: Grant execute permission for gradlew
         run: |
           if [ -f ./gradlew ]; then
             chmod +x ./gradlew
+          fi
+
+      - name: Build with Gradle
+        run: |
+          if [ -f ./gradlew ]; then
             ./gradlew assembleDebug --no-daemon --stacktrace --info
           else
-            echo "gradlew not found; falling back to system gradle"
             gradle assembleDebug --no-daemon --stacktrace --info
           fi
 
