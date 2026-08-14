@@ -1,8 +1,8 @@
 package com.yahya.sijillati
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.Locale
-import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
     private lateinit var manager: TransactionManager
@@ -20,7 +19,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvCard: TextView
     private lateinit var tvIncome: TextView
     private lateinit var tvExpense: TextView
-    private lateinit var tvNetDebt: TextView
+    private lateinit var tvDebtGiven: TextView
+    private lateinit var tvDebtTaken: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,13 +32,17 @@ class MainActivity : AppCompatActivity() {
         tvCard = findViewById(R.id.tvCard)
         tvIncome = findViewById(R.id.tvIncome)
         tvExpense = findViewById(R.id.tvExpense)
-        tvNetDebt = findViewById(R.id.tvNetDebt)
+        tvDebtGiven = findViewById(R.id.tvDebtGiven)
+        tvDebtTaken = findViewById(R.id.tvDebtTaken)
 
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         findViewById<FloatingActionButton>(R.id.fabAdd).setOnClickListener {
             startActivity(Intent(this, AddTransactionActivity::class.java))
+        }
+        findViewById<Button>(R.id.btnLog).setOnClickListener {
+            startActivity(Intent(this, TransactionLogActivity::class.java))
         }
     }
 
@@ -52,16 +56,8 @@ class MainActivity : AppCompatActivity() {
         tvCard.text = money(s.cardBalance)
         tvIncome.text = money(s.totalIncome)
         tvExpense.text = money(s.totalExpense)
-        tvNetDebt.text = when {
-            s.netDebt > 0 -> String.format(Locale.US, "عليك %,.0f د.ع", s.netDebt)
-            s.netDebt < 0 -> String.format(Locale.US, "لك %,.0f د.ع", abs(s.netDebt))
-            else -> "متوازن ✅"
-        }
-        tvNetDebt.setTextColor(Color.parseColor(when {
-            s.netDebt > 0 -> "#D32F2F"
-            s.netDebt < 0 -> "#2E7D32"
-            else -> "#666666"
-        }))
+        tvDebtGiven.text = money(s.debtGivenTotal)
+        tvDebtTaken.text = money(s.debtTakenTotal)
     }
 
     private fun money(x: Double) = String.format(Locale.US, "%,.0f د.ع", x)
