@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -21,10 +20,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".AddTransactionActivity" />
-        <activity android:name=".ReportsActivity" />
-        <activity android:name=".SettingsActivity" />
-        <activity android:name=".TransactionLogActivity" />
+        <activity android:name=".AddTransactionActivity" android:exported="false" />
+        <activity android:name=".ReportsActivity" android:exported="false" />
+        <activity android:name=".SettingsActivity" android:exported="false" />
+        <activity android:name=".TransactionLogActivity" android:exported="false" />
 
     </application>
 

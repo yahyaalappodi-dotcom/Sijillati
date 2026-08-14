@@ -11,7 +11,4 @@ object WorkScheduler {
         val workRequest = PeriodicWorkRequestBuilder<DailyReminderWorker>(24, TimeUnit.HOURS).build()
         WorkManager.getInstance(context).enqueueUniquePeriodicWork("daily_reminder", ExistingPeriodicWorkPolicy.KEEP, workRequest)
     }
-    fun cancelDailyReminder(context: Context) {
-        WorkManager.getInstance(context).cancelUniqueWork("daily_reminder")
-    }
 }

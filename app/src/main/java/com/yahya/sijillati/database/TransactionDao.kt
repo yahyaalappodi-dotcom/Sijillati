@@ -17,9 +17,6 @@ interface TransactionDao {
     @Delete
     suspend fun delete(transaction: TransactionEntity)
 
-    @Update
-    suspend fun update(transaction: TransactionEntity)
-
     @Query("SELECT COALESCE(SUM(amount), 0.0) FROM transactions WHERE type = 'INCOME' AND currency = :currency")
     fun getTotalIncome(currency: String): LiveData<Double>
 
@@ -31,7 +28,4 @@ interface TransactionDao {
 
     @Query("SELECT COALESCE(SUM(amount), 0.0) FROM transactions WHERE type = 'BORROW' AND currency = :currency")
     fun getTotalBorrowed(currency: String): LiveData<Double>
-
-    @Query("SELECT * FROM transactions WHERE title LIKE '%' || :query || '%' ORDER BY date DESC")
-    fun search(query: String): LiveData<List<TransactionEntity>>
 }
