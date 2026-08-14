@@ -1,250 +1,96 @@
 package com.yahya.sijillati
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
-import android.widget.Toast
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.yahya.sijillati.database.AppDatabase
-import com.yahya.sijillati.databinding.ActivityMainBinding
-import kotlinx.coroutines.launch
-import java.util.*
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.util.Locale
+import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var db: AppDatabase
-    private lateinit var adapter: TransactionAdapter
+    private lateinit var manager: TransactionManager
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var tvBalance: TextView
+    private lateinit var tvCash: TextView
+    private lateinit var tvCard: TextView
+    private lateinit var tvIncome: TextView
+    private lateinit var tvExpense: TextView
+    private lateinit var tvNetDebt: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        manager = TransactionManager(this)
 
-        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
-        val fingerprintEnabled = prefs.getBoolean("fingerprint", false)
+        tvBalance = findViewById(R.id.tvBalance)
+        tvCash = findViewById(R.id.tvCash)
+        tvCard = findViewById(R.id.tvCard)
+        tvIncome = findViewById(R.id.tvIncome)
+        tvExpense = findViewById(R.id.tvExpense)
+        tvNetDebt = findViewById(R.id.tvNetDebt)
 
-        if (fingerprintEnabled) {
-            val biometricHelper = BiometricHelper(this)
-            if (biometricHelper.canAuthenticate()) {
-                setContentView(R.layout.activity_splash)
-                biometricHelper.authenticate(
-                    onSuccess = { setupMainUI() },
-                    onError = { error ->
-                        Toast.makeText(this, error, Toast.LENGTH_LONG).show()
-                        prefs.edit().putBoolean("fingerprint", false).apply()
-                        setupMainUI()
-                    }
-                )
-                return
-            } else {
-                Toast.makeText(this, "البصمة غير متوفرة على هذا الجهاز", Toast.LENGTH_SHORT).show()
-                prefs.edit().putBoolean("fingerprint", false).apply()
-            }
-        }
-        setupMainUI()
-    }
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-    private fun setupMainUI() {
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        db = AppDatabase.getDatabase(this)
-
-        NotificationHelper(this).createChannel()
-        WorkScheduler.scheduleDailyReminder(this)
-
-        adapter = TransactionAdapter(
-            emptyList(),
-            onItemClick = { transaction ->
-                Toast.makeText(this, transaction.title, Toast.LENGTH_SHORT).show()
-            },
-            onEditClick = { transaction ->
-                val intent = Intent(this, EditTransactionActivity::class.java)
-                intent.putExtra("transaction_id", transaction.id)
-                startActivity(intent)
-            },
-            onDeleteClick = { transaction ->
-                lifecycleScope.launch {
-                    db.transactionDao().delete(transaction)
-                    Toast.makeText(this@MainActivity, "تم الحذف", Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
-        
-        // ✅ إصلاح: LinearLayoutManager
-        binding.recyclerTransactions.layoutManager = LinearLayoutManager(this)
-        binding.recyclerTransactions.adapter = adapter
-
-        binding.btnAdd.setOnClickListener {
+        findViewById<FloatingActionButton>(R.id.fabAdd).setOnClickListener {
             startActivity(Intent(this, AddTransactionActivity::class.java))
         }
-        binding.btnReports.setOnClickListener {
-            startActivity(Intent(this, ReportsActivity::class.java))
-        }
-        binding.btnSettings.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
-        binding.btnLog.setOnClickListener {
-            startActivity(Intent(this, TransactionLogActivity::class.java))
-        }
-
-        observeData()
     }
 
-    private fun observeData() {
-        db.transactionDao().getTotalIncome("IQD").observe(this) { inc ->
-            db.transactionDao().getTotalExpense("IQD").observe(this) { exp ->
-                val wallet = (inc ?: 0.0) - (exp ?: 0.0)
-                binding.tvWalletIqd.text = "%,.0f د.ع".format(Locale.US, wallet)
-            }
+    override fun onResume() { super.onResume(); refresh() }
+
+    private fun refresh() {
+        recyclerView.adapter = TransactionAdapter(manager.getAllTransactions()) { t -> showLongPressMenu(t) }
+        val s = manager.getSummary("د.ع")
+        tvBalance.text = money(s.totalBalance)
+        tvCash.text = money(s.cashBalance)
+        tvCard.text = money(s.cardBalance)
+        tvIncome.text = money(s.totalIncome)
+        tvExpense.text = money(s.totalExpense)
+        tvNetDebt.text = when {
+            s.netDebt > 0 -> String.format(Locale.US, "عليك %,.0f د.ع", s.netDebt)
+            s.netDebt < 0 -> String.format(Locale.US, "لك %,.0f د.ع", abs(s.netDebt))
+            else -> "متوازن ✅"
         }
-        db.transactionDao().getTotalIncome("USD").observe(this) { inc ->
-            db.transactionDao().getTotalExpense("USD").observe(this) { exp ->
-                val wallet = (inc ?: 0.0) - (exp ?: 0.0)
-                binding.tvWalletUsd.text = "%,.0f $".format(Locale.US, wallet)
-            }
-        }
-        db.transactionDao().getTotalLent("IQD").observe(this) { iqd ->
-            db.transactionDao().getTotalLent("USD").observe(this) { usd ->
-                binding.tvLent.text = "إقراض: %,.0f".format(Locale.US, (iqd ?: 0.0) + (usd ?: 0.0))
-            }
-        }
-        db.transactionDao().getTotalBorrowed("IQD").observe(this) { iqd ->
-            db.transactionDao().getTotalBorrowed("USD").observe(this) { usd ->
-                binding.tvBorrowed.text = "اقتراض: %,.0f".format(Locale.US, (iqd ?: 0.0) + (usd ?: 0.0))
-            }
-        }
-        db.transactionDao().getAll().observe(this) { list ->
-            adapter.updateList(list.take(10))
-        }
+        tvNetDebt.setTextColor(Color.parseColor(when {
+            s.netDebt > 0 -> "#D32F2F"
+            s.netDebt < 0 -> "#2E7D32"
+            else -> "#666666"
+        }))
     }
 
-    override fun onResume() {
-        super.onResume()
-        db.transactionDao().getAll().observe(this) { list ->
-            adapter.updateList(list.take(10))
-        }
-    }
-}
-package com.yahya.sijillati
+    private fun money(x: Double) = String.format(Locale.US, "%,.0f د.ع", x)
 
-import android.content.Intent
-import android.os.Bundle
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.yahya.sijillati.database.AppDatabase
-import com.yahya.sijillati.database.TransactionEntity
-import com.yahya.sijillati.databinding.ActivityMainBinding
-import kotlinx.coroutines.launch
-import java.util.*
-
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var db: AppDatabase
-    private lateinit var adapter: TransactionAdapter
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
-        val fingerprintEnabled = prefs.getBoolean("fingerprint", false)
-
-        if (fingerprintEnabled) {
-            val biometricHelper = BiometricHelper(this)
-            if (biometricHelper.canAuthenticate()) {
-                setContentView(R.layout.activity_splash)
-                biometricHelper.authenticate(
-                    onSuccess = { setupMainUI() },
-                    onError = { error ->
-                        Toast.makeText(this, error, Toast.LENGTH_LONG).show()
-                        prefs.edit().putBoolean("fingerprint", false).apply()
-                        setupMainUI()
-                    }
-                )
-                return
-            } else {
-                Toast.makeText(this, "البصمة غير متوفرة، تم تعطيلها", Toast.LENGTH_SHORT).show()
-                prefs.edit().putBoolean("fingerprint", false).apply()
-            }
-        }
-        setupMainUI()
-    }
-
-    private fun setupMainUI() {
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        db = AppDatabase.getDatabase(this)
-
-        NotificationHelper(this).createChannel()
-        WorkScheduler.scheduleDailyReminder(this)
-
-        adapter = TransactionAdapter(
-            emptyList(),
-            onItemClick = { transaction ->
-                Toast.makeText(this, transaction.title, Toast.LENGTH_SHORT).show()
-            },
-            onEditClick = { transaction ->
-                val intent = Intent(this, EditTransactionActivity::class.java)
-                intent.putExtra("transaction_id", transaction.id)
-                startActivity(intent)
-            },
-            onDeleteClick = { transaction ->
-                lifecycleScope.launch {
-                    db.transactionDao().delete(transaction)
-                    Toast.makeText(this@MainActivity, "تم الحذف", Toast.LENGTH_SHORT).show()
+    private fun showLongPressMenu(t: Transaction) {
+        AlertDialog.Builder(this)
+            .setTitle(t.title)
+            .setItems(arrayOf("➖ حذف", "✏️ تعديل", "📦 أرشفة")) { _, which ->
+                when (which) {
+                    0 -> confirmDelete(t)
+                    1 -> startActivity(Intent(this, AddTransactionActivity::class.java).apply { putExtra("EXTRA_ID", t.id) })
+                    2 -> confirmArchive(t)
                 }
-            }
-        )
-        binding.recyclerTransactions.adapter = adapter
-
-        binding.btnAdd.setOnClickListener {
-            startActivity(Intent(this, AddTransactionActivity::class.java))
-        }
-        binding.btnReports.setOnClickListener {
-            startActivity(Intent(this, ReportsActivity::class.java))
-        }
-        binding.btnSettings.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
-        binding.btnLog.setOnClickListener {
-            startActivity(Intent(this, TransactionLogActivity::class.java))
-        }
-
-        observeData()
+            }.show()
     }
 
-    private fun observeData() {
-        db.transactionDao().getTotalIncome("IQD").observe(this) { inc ->
-            db.transactionDao().getTotalExpense("IQD").observe(this) { exp ->
-                val wallet = (inc ?: 0.0) - (exp ?: 0.0)
-                binding.tvWalletIqd.text = "%,.0f د.ع".format(Locale.US, wallet)
-            }
-        }
-        db.transactionDao().getTotalIncome("USD").observe(this) { inc ->
-            db.transactionDao().getTotalExpense("USD").observe(this) { exp ->
-                val wallet = (inc ?: 0.0) - (exp ?: 0.0)
-                binding.tvWalletUsd.text = "%,.0f $".format(Locale.US, wallet)
-            }
-        }
-        db.transactionDao().getTotalLent("IQD").observe(this) { iqd ->
-            db.transactionDao().getTotalLent("USD").observe(this) { usd ->
-                binding.tvLent.text = "إقراض: %,.0f".format(Locale.US, (iqd ?: 0.0) + (usd ?: 0.0))
-            }
-        }
-        db.transactionDao().getTotalBorrowed("IQD").observe(this) { iqd ->
-            db.transactionDao().getTotalBorrowed("USD").observe(this) { usd ->
-                binding.tvBorrowed.text = "اقتراض: %,.0f".format(Locale.US, (iqd ?: 0.0) + (usd ?: 0.0))
-            }
-        }
-        db.transactionDao().getAll().observe(this) { list ->
-            adapter.updateList(list.take(10))
-        }
+    private fun confirmDelete(t: Transaction) {
+        AlertDialog.Builder(this)
+            .setTitle("حذف المعاملة")
+            .setMessage("هل تريد حذف '${t.title}' نهائياً؟ لا يمكن التراجع.")
+            .setPositiveButton("حذف") { _, _ -> manager.deleteTransaction(t.id); refresh() }
+            .setNegativeButton("إلغاء", null).show()
     }
 
-    override fun onResume() {
-        super.onResume()
-        // Refresh data when coming back
-        db.transactionDao().getAll().observe(this) { list ->
-            adapter.updateList(list.take(10))
-        }
+    private fun confirmArchive(t: Transaction) {
+        AlertDialog.Builder(this)
+            .setTitle("أرشفة المعاملة")
+            .setMessage("هل تريد نقل '${t.title}' إلى الأرشيف؟")
+            .setPositiveButton("أرشفة") { _, _ -> manager.archiveTransaction(t.id); refresh() }
+            .setNegativeButton("إلغاء", null).show()
     }
 }
