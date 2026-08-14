@@ -11,7 +11,6 @@ class NotificationHelper(private val context: Context) {
         const val CHANNEL_ID = "daily_reminder"
         const val NOTIFICATION_ID = 1001
     }
-
     fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(CHANNEL_ID, "التذكير اليومي", NotificationManager.IMPORTANCE_DEFAULT)
@@ -20,7 +19,6 @@ class NotificationHelper(private val context: Context) {
             manager.createNotificationChannel(channel)
         }
     }
-
     fun showDailyReminder(totalExpenseIqd: Double, totalExpenseUsd: Double) {
         val message = when {
             totalExpenseIqd > 0 && totalExpenseUsd > 0 -> "صرفت اليوم: %,.0f د.ع و %,.0f $".format(totalExpenseIqd, totalExpenseUsd)

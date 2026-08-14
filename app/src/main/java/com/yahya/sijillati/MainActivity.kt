@@ -1,12 +1,14 @@
 package com.yahya.sijillati
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.yahya.sijillati.database.AppDatabase
+import com.yahya.sijillati.database.TransactionEntity
 import com.yahya.sijillati.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -17,34 +19,69 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
         val fingerprintEnabled = prefs.getBoolean("fingerprint", false)
 
         if (fingerprintEnabled) {
-            setContentView(R.layout.activity_splash)
-            BiometricHelper(this).authenticate(
-                onSuccess = { setupMainUI() },
-                onError = { finish() }
-            )
-        } else {
-            setupMainUI()
+            val biometricHelper = BiometricHelper(this)
+            if (biometricHelper.canAuthenticate()) {
+                setContentView(R.layout.activity_splash)
+                biometricHelper.authenticate(
+                    onSuccess = { setupMainUI() },
+                    onError = { error ->
+                        Toast.makeText(this, error, Toast.LENGTH_LONG).show()
+                        prefs.edit().putBoolean("fingerprint", false).apply()
+                        setupMainUI()
+                    }
+                )
+                return
+            } else {
+                Toast.makeText(this, "البصمة غير متوفرة، تم تعطيلها", Toast.LENGTH_SHORT).show()
+                prefs.edit().putBoolean("fingerprint", false).apply()
+            }
         }
+        setupMainUI()
     }
 
     private fun setupMainUI() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         db = AppDatabase.getDatabase(this)
+
         NotificationHelper(this).createChannel()
         WorkScheduler.scheduleDailyReminder(this)
 
-        adapter = TransactionAdapter(emptyList()) {}
+        adapter = TransactionAdapter(
+            emptyList(),
+            onItemClick = { transaction ->
+                Toast.makeText(this, transaction.title, Toast.LENGTH_SHORT).show()
+            },
+            onEditClick = { transaction ->
+                val intent = Intent(this, EditTransactionActivity::class.java)
+                intent.putExtra("transaction_id", transaction.id)
+                startActivity(intent)
+            },
+            onDeleteClick = { transaction ->
+                lifecycleScope.launch {
+                    db.transactionDao().delete(transaction)
+                    Toast.makeText(this@MainActivity, "تم الحذف", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
         binding.recyclerTransactions.adapter = adapter
 
-        binding.btnAdd.setOnClickListener { startActivity(Intent(this, AddTransactionActivity::class.java)) }
-        binding.btnReports.setOnClickListener { startActivity(Intent(this, ReportsActivity::class.java)) }
-        binding.btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
-        binding.btnLog.setOnClickListener { startActivity(Intent(this, TransactionLogActivity::class.java)) }
+        binding.btnAdd.setOnClickListener {
+            startActivity(Intent(this, AddTransactionActivity::class.java))
+        }
+        binding.btnReports.setOnClickListener {
+            startActivity(Intent(this, ReportsActivity::class.java))
+        }
+        binding.btnSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+        binding.btnLog.setOnClickListener {
+            startActivity(Intent(this, TransactionLogActivity::class.java))
+        }
 
         observeData()
     }
@@ -72,6 +109,14 @@ class MainActivity : AppCompatActivity() {
                 binding.tvBorrowed.text = "اقتراض: %,.0f".format(Locale.US, (iqd ?: 0.0) + (usd ?: 0.0))
             }
         }
+        db.transactionDao().getAll().observe(this) { list ->
+            adapter.updateList(list.take(10))
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh data when coming back
         db.transactionDao().getAll().observe(this) { list ->
             adapter.updateList(list.take(10))
         }

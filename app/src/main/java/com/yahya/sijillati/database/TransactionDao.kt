@@ -11,11 +11,17 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE type = :type ORDER BY date DESC")
     fun getByType(type: String): LiveData<List<TransactionEntity>>
 
+    @Query("SELECT * FROM transactions WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Int): TransactionEntity?
+
     @Insert
-    suspend fun insert(transaction: TransactionEntity)
+    suspend fun insert(transaction: TransactionEntity): Long
 
     @Delete
     suspend fun delete(transaction: TransactionEntity)
+
+    @Update
+    suspend fun update(transaction: TransactionEntity)
 
     @Query("SELECT COALESCE(SUM(amount), 0.0) FROM transactions WHERE type = 'INCOME' AND currency = :currency")
     fun getTotalIncome(currency: String): LiveData<Double>

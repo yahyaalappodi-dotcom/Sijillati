@@ -7,7 +7,7 @@
     android:background="@color/background">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
         <androidx.appcompat.widget.Toolbar android:layout_width="match_parent" android:layout_height="56dp" android:background="@color/primary_dark">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="إدارة المصروفات" android:textColor="@color/white" android:textSize="20sp" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="سجلتي - إدارة المصروفات" android:textColor="@color/white" android:textSize="20sp" android:textStyle="bold" />
         </androidx.appcompat.widget.Toolbar>
         <EditText android:id="@+id/etSearch" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="12dp" android:background="@drawable/bg_search" android:hint="ابحث..." android:paddingHorizontal="16dp" android:textAlignment="viewEnd" />
         <androidx.cardview.widget.CardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" app:cardBackgroundColor="@color/green" app:cardCornerRadius="16dp" app:cardElevation="4dp">
