@@ -4,7 +4,8 @@
     <application
         android:allowBackup="true"
         android:supportsRtl="true"
-        android:label="سجلاتي">
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Sijillati">
 
         <activity
             android:name=".MainActivity"
