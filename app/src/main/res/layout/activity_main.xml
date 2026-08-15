@@ -14,25 +14,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#1A237E"
-            android:padding="16dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:padding="12dp"
+            android:orientation="vertical">
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="سجلاتي"
                 android:textColor="#FFFFFF"
-                android:textSize="26sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:gravity="end"/>
-            <Button
-                android:id="@+id/btnLog"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="📋 السجل"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#3F51B5"/>
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+                <Button android:id="@+id/btnCurrency" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="💱 د.ع" android:textColor="#FFFFFF" android:backgroundTint="#3949AB"/>
+                <Button android:id="@+id/btnReports" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📊 تحليلات" android:textColor="#FFFFFF" android:backgroundTint="#3949AB" android:layout_marginStart="6dp"/>
+                <Button android:id="@+id/btnSettings" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="⚙️ إعدادات" android:textColor="#FFFFFF" android:backgroundTint="#3949AB" android:layout_marginStart="6dp"/>
+                <Button android:id="@+id/btnLog" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📋 السجل" android:textColor="#FFFFFF" android:backgroundTint="#3949AB" android:layout_marginStart="6dp"/>
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout

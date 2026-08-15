@@ -12,6 +12,7 @@ class AddTransactionActivity : AppCompatActivity() {
     private lateinit var etAmount: EditText
     private lateinit var rgType: RadioGroup
     private lateinit var rgMethod: RadioGroup
+    private lateinit var spinnerCurrency: Spinner
     private lateinit var tvDate: TextView
     private lateinit var manager: TransactionManager
     private var selectedDate = Calendar.getInstance()
@@ -26,7 +27,10 @@ class AddTransactionActivity : AppCompatActivity() {
         etAmount = findViewById(R.id.etAmount)
         rgType = findViewById(R.id.rgType)
         rgMethod = findViewById(R.id.rgMethod)
+        spinnerCurrency = findViewById(R.id.spinnerCurrency)
         tvDate = findViewById(R.id.tvDate)
+
+        spinnerCurrency.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, arrayOf("د.ع", "$"))
 
         editingId = intent.getIntExtra("EXTRA_ID", -1)
         if (editingId != -1) load(editingId) else {
@@ -47,6 +51,7 @@ class AddTransactionActivity : AppCompatActivity() {
             else -> R.id.rbBorrowed
         })
         rgMethod.check(if (t.paymentMethod == "ماستر") R.id.rbMaster else R.id.rbCash)
+        spinnerCurrency.setSelection(if (t.currency == "$") 1 else 0)
         try { SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(t.date)?.let { selectedDate.time = it } } catch (_: Exception) {}
         updateDate()
     }
@@ -73,12 +78,13 @@ class AddTransactionActivity : AppCompatActivity() {
             else -> "اقتراض"
         }
         val method = if (rgMethod.checkedRadioButtonId == R.id.rbMaster) "ماستر" else "كاش"
+        val currency = spinnerCurrency.selectedItem.toString()
         val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(selectedDate.time)
 
         val old = if (editingId != -1) manager.getAllTransactions(true).find { it.id == editingId } else null
         val t = Transaction(
             editingId.takeIf { it != -1 } ?: System.currentTimeMillis().toInt(),
-            title, amount, type, method, "د.ع", date, old?.isArchived ?: false
+            title, amount, type, method, currency, date, old?.isArchived ?: false
         )
         if (old == null) manager.addTransaction(t) else manager.updateTransaction(t)
         Toast.makeText(this, if (old == null) "تم الحفظ بنجاح" else "تم تعديل المعاملة بنجاح", Toast.LENGTH_SHORT).show()
