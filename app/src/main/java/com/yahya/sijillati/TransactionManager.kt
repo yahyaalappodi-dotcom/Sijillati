@@ -68,6 +68,61 @@ class TransactionManager(context: Context) {
         return list
     }
 
+
+    fun getSummary(currency: String): Summary {
+        var cash = 0.0
+        var card = 0.0
+        var income = 0.0
+        var expense = 0.0
+        var debtGiven = 0.0
+        var debtTaken = 0.0
+        val filtered = getAllTransactions(false).filter { it.currency == currency }
+        for (t in filtered) {
+            val isCash = t.paymentMethod == "كاش"
+            when (t.type) {
+                "دخل" -> { income += t.amount; if (isCash) cash += t.amount else card += t.amount }
+                "مصروف" -> { expense += t.amount; if (isCash) cash -= t.amount else card -= t.amount }
+                "اقتراض" -> { debtTaken += t.amount; if (isCash) cash += t.amount else card += t.amount }
+                "إقراض" -> { debtGiven += t.amount; if (isCash) cash -= t.amount else card -= t.amount }
+            }
+        }
+        val netDebt = debtTaken - debtGiven
+        return Summary(cash, card, cash + card, income, expense, debtGiven, debtTaken, netDebt)
+    }
+
+    fun checkMonthlyRollover() {
+        val sdfMonth = SimpleDateFormat("yyyy-MM", Locale.US)
+        val currentMonth = sdfMonth.format(Date())
+        val lastMonth = prefs.getString(lastCheckKey, null)
+        if (lastMonth == null) {
+            prefs.edit().putString(lastCheckKey, currentMonth).apply()
+            return
+        }
+        if (lastMonth == currentMonth) return
+        val monthTxns = getAllTransactions(false).filter { it.date.startsWith(lastMonth) }
+        if (monthTxns.isNotEmpty()) {
+            var income = 0.0
+            var expense = 0.0
+            for (t in monthTxns) {
+                when (t.type) {
+                    "دخل" -> income += t.amount
+                    "مصروف" -> expense += t.amount
+                }
+            }
+            val history = getMonthlyHistory().toMutableList()
+            history.add(0, MonthlyRecord(lastMonth, expense, income, income - expense))
+            saveMonthlyHistory(history)
+            val allList = getAllTransactions(true).toMutableList()
+            for (mt in monthTxns) {
+                val idx = allList.indexOfFirst { it.id == mt.id }
+                if (idx != -1) allList[idx] = allList[idx].copy(isArchived = true)
+            }
+            saveList(allList)
+            log("تصفير شهري", "تم ارشفة معاملات شهر " + lastMonth)
+        }
+        prefs.edit().putString(lastCheckKey, currentMonth).apply()
+    }
+
     fun getMonthlyHistory(): List<MonthlyRecord> {
         val a = JSONArray(prefs.getString(historyKey, "[]") ?: "[]")
         val list = mutableListOf<MonthlyRecord>()
