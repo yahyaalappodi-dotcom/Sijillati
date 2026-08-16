@@ -2,6 +2,7 @@ package com.yahya.sijillati
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvDebtGiven: TextView
     private lateinit var tvDebtTaken: TextView
     private lateinit var btnCurrency: Button
+    private lateinit var lockOverlay: View
     private var currentCurrency = "د.ع"
     private var unlocked = false
 
@@ -29,6 +31,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         manager = TransactionManager(this)
+
+        lockOverlay = findViewById(R.id.lockOverlay)
+        val prefs = getSharedPreferences("sijillati_prefs", MODE_PRIVATE)
+        val biometricEnabled = prefs.getBoolean("biometric_lock", false)
+        lockOverlay.visibility = if (biometricEnabled) View.VISIBLE else View.GONE
 
         tvBalance = findViewById(R.id.tvBalance)
         tvCash = findViewById(R.id.tvCash)
@@ -63,6 +70,7 @@ class MainActivity : AppCompatActivity() {
             refresh()
         }
 
+        if (!biometricEnabled) unlocked = true
         checkBiometricLock()
     }
 
@@ -70,17 +78,27 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("sijillati_prefs", MODE_PRIVATE)
         val enabled = prefs.getBoolean("biometric_lock", false)
         if (enabled && !unlocked) {
-            BiometricHelper.authenticate(this, onSuccess = { unlocked = true }, onFail = { finish() })
-        } else {
-            unlocked = true
+            lockOverlay.visibility = View.VISIBLE
+            BiometricHelper.authenticate(this,
+                onSuccess = {
+                    unlocked = true
+                    lockOverlay.visibility = View.GONE
+                    refresh()
+                },
+                onFail = { finish() }
+            )
+        } else if (unlocked) {
+            lockOverlay.visibility = View.GONE
         }
     }
 
     override fun onResume() {
         super.onResume()
         manager.checkMonthlyRollover()
+        if (unlocked) {
+            refresh()
+        }
         checkBiometricLock()
-        refresh()
     }
 
     private fun refresh() {
@@ -103,14 +121,17 @@ class MainActivity : AppCompatActivity() {
             AlertDialog.Builder(this).setTitle("السجل الشهري").setMessage("لا يوجد سجل شهري بعد").setPositiveButton("إغلاق", null).show()
             return
         }
-        val items = history.map { String.format(Locale.US, "%s: مصروف %,.0f | دخل %,.0f | الصافي %,.0f", it.month, it.totalExpense, it.totalIncome, it.remaining) }.toTypedArray()
+        val items: Array<CharSequence> = history.map {
+            String.format(Locale.US, "%s: مصروف %,.0f | دخل %,.0f | الصافي %,.0f", it.month, it.totalExpense, it.totalIncome, it.remaining) as CharSequence
+        }.toTypedArray()
         AlertDialog.Builder(this).setTitle("السجل الشهري").setItems(items, null).setPositiveButton("إغلاق", null).show()
     }
 
     private fun showLongPressMenu(t: Transaction) {
+        val options: Array<CharSequence> = arrayOf("➖ حذف", "✏️ تعديل", "📦 أرشفة")
         AlertDialog.Builder(this)
             .setTitle(t.title)
-            .setItems(arrayOf("➖ حذف", "✏️ تعديل", "📦 أرشفة")) { _, which ->
+            .setItems(options) { _, which ->
                 when (which) {
                     0 -> confirmDelete(t)
                     1 -> startActivity(Intent(this, AddTransactionActivity::class.java).apply { putExtra("EXTRA_ID", t.id) })

@@ -96,4 +96,21 @@
         android:layout_margin="16dp"
         android:src="@android:drawable/ic_input_add"
         app:backgroundTint="#1976D2"/>
+
+    <FrameLayout
+        android:id="@+id/lockOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#1A237E"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="🔒 سجلاتي مقفل"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"/>
+    </FrameLayout>
 </FrameLayout>
